@@ -8,6 +8,7 @@ export function showFrameRate(p: p5) {
 
     // update frame rate every 10 frames
     if (frameCounter % 10 === 0) {
+        frameCounter = 0
         frameRateDisplay = p.frameRate().toFixed()
     }
 
