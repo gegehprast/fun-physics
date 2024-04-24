@@ -71,7 +71,7 @@ class Edge {
             .copy()
             .normalize()
             .mult(-1)
-            .setMag(0.1 * particle.mass)
+            .setMag(0.5 * particle.mass)
 
         particle.applyForce(friction)
     }
