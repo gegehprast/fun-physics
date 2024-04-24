@@ -31,15 +31,6 @@ class Particle {
     }
 
     public draw() {
-        this.velocity.add(this.acceleration)
-        this.position.add(this.velocity)
-        this.acceleration.set(0, 0)
-
-        // prevent particle from wiggling when velocity is very low
-        if (this.velocity.mag() < 0.01) {
-            this.velocity.set(0, 0)
-        }
-        
         this.p.fill(255)
         this.p.stroke('red')
         this.p.circle(this.position.x, this.position.y, this.radius * 2)
@@ -70,6 +61,21 @@ class Particle {
             this.position.x + this.radius + 10,
             this.position.y + 20
         )
+        this.p.text(
+            `acc: (${this.acceleration.x.toFixed(2)}, ${this.acceleration.y.toFixed(2)})`,
+            this.position.x + this.radius + 10,
+            this.position.y + 40
+        )
+
+
+        this.velocity.add(this.acceleration)
+        this.position.add(this.velocity)
+        this.acceleration.set(0, 0)
+
+        // prevent particle from wiggling when velocity is very low
+        if (this.velocity.mag() < 0.01) {
+            this.velocity.set(0, 0)
+        }
     }
 }
 
