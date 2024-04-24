@@ -66,14 +66,14 @@ const sketch = (p: p5) => {
         drags = [
             // air
             new Drag(p, 0.2, p.createVector(0, 0), WIDTH, HEIGHT, particles, p.color(0)),
-            new Drag(p, 1, p.createVector(50, 100), 100, 100, particles, p.color(0, 0, 255, 100)),
-            new Drag(p, 1, p.createVector(260, 250), 100, 100, particles, p.color(0, 0, 255, 100)),
-            new Drag(p, 1, p.createVector(400, 450), 100, 100, particles, p.color(0, 0, 255, 100)),
-            new Drag(p, 1, p.createVector(80, 400), 100, 100, particles, p.color(0, 0, 255, 100)),
-            new Drag(p, 1, p.createVector(270, 600), 100, 100, particles, p.color(0, 0, 255, 100)),
-            new Drag(p, 1, p.createVector(300, 800), 100, 100, particles, p.color(0, 0, 255, 100)),
             // water
-            new Drag(p, 1, p.createVector(0, 1000), WIDTH, 300, particles, p.color(0, 0, 255, 100)),
+            new Drag(p, 2, p.createVector(50, 100), 100, 100, particles, p.color(0, 0, 255, 100)),
+            new Drag(p, 2, p.createVector(260, 250), 100, 100, particles, p.color(0, 0, 255, 100)),
+            new Drag(p, 2, p.createVector(400, 350), 100, 300, particles, p.color(0, 0, 255, 100)),
+            new Drag(p, 2, p.createVector(80, 400), 400, 100, particles, p.color(0, 0, 255, 100)),
+            new Drag(p, 2, p.createVector(270, 600), 100, 100, particles, p.color(0, 0, 255, 100)),
+            new Drag(p, 2, p.createVector(300, 800), 100, 100, particles, p.color(0, 0, 255, 100)),
+            new Drag(p, 2, p.createVector(0, 1000), WIDTH, 300, particles, p.color(0, 0, 255, 100)),
         ]
 
         // pause / play with space bar
@@ -111,7 +111,7 @@ const sketch = (p: p5) => {
 
         drags.forEach((drag) => drag.draw())
 
-        // topEdge.detect(particles)
+        topEdge.detect(particles)
         rightEdge.detect(particles)
         bottomEdge.detect(particles)
         leftEdge.detect(particles)
