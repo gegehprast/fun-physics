@@ -5,9 +5,9 @@ import { HEIGHT, WIDTH } from './config'
 import Edge from './Edge'
 import Gravity from './Gravity'
 import Wind from './Wind'
+import Drag from './Drag'
 
-let particle: Particle
-let particle2: Particle
+let particles: Particle[] = []
 
 let topEdge: Edge
 let rightEdge: Edge
@@ -16,6 +16,7 @@ let leftEdge: Edge
 
 let gravity: Gravity
 let wind: Wind
+let drags: Drag[] = []
 
 const BOUNDARY = 0
 
@@ -53,15 +54,43 @@ const sketch = (p: p5) => {
         // bottomEdge.setDebug(true)
         // leftEdge.setDebug(true)
 
-        particle = new Particle(p, 200, 200, 2)
-        particle2 = new Particle(p, 400, 400, 4)
+        particles = [
+            new Particle(p, p.createVector(100, 50), 2, 10),
+            new Particle(p, p.createVector(250, 50), 2, 20),
+            new Particle(p, p.createVector(350, 50), 4, 10),
+            new Particle(p, p.createVector(450, 50), 4, 20),
+        ]
 
-        gravity = new Gravity([particle, particle2])
-        wind = new Wind(p, [particle, particle2])
+        gravity = new Gravity(particles)
+        wind = new Wind(p, particles)
+        drags = [
+            new Drag(p, p.createVector(0, 200), p.width, 200, particles),
+            new Drag(p, p.createVector(0, 700), p.width, 200, particles),
+        ]
+
+        // pause / play with space bar
+        p.keyPressed = () => {
+            if (p.keyCode === 32) {
+                if (p.isLooping()) {
+                    p.noLoop()
+                } else {
+                    p.loop()
+                }
+            }
+        }
     }
 
     p.draw = () => {
         p.background(0)
+
+        // // draw grid
+        // p.stroke(255)
+        // for (let x = 0; x < p.width; x += 20) {
+        //     p.line(x, 0, x, p.height)
+        // }
+        // for (let y = 0; y < p.height; y += 20) {
+        //     p.line(0, y, p.width, y)
+        // }
 
         gravity.apply()
 
@@ -70,18 +99,23 @@ const sketch = (p: p5) => {
         if (p.keyIsDown(p.DOWN_ARROW)) wind.blowDown()
         if (p.keyIsDown(p.LEFT_ARROW)) wind.blowLeft()
 
-        topEdge.detect([particle, particle2])
-        rightEdge.detect([particle, particle2])
-        bottomEdge.detect([particle, particle2])
-        leftEdge.detect([particle, particle2])
+        drags.forEach((drag) => drag.apply())
+
+        drags.forEach((drag) => drag.draw())
+
+        // topEdge.detect(particles)
+        rightEdge.detect(particles)
+        bottomEdge.detect(particles)
+        leftEdge.detect(particles)
 
         topEdge.draw()
         rightEdge.draw()
         bottomEdge.draw()
         leftEdge.draw()
 
-        particle2.draw()
-        particle.draw()
+        for (const particle of particles) {
+            particle.draw()
+        }
 
         showFrameRate(p)
     }

@@ -14,11 +14,15 @@ class Particle {
 
     public radius: number
 
-    constructor(p: p5, x: number, y: number, mass: number) {
+    constructor(p: p5, pos: Vector, mass: number, radius: number) {
         this.p = p
-        this.position = new Vector(x, y)
+        this.position = pos
         this.mass = mass
-        this.radius = mass * 10
+        this.radius = radius
+    }
+
+    public surfaceArea() {
+        return (2 * Math.PI * this.radius) / 2
     }
 
     public applyForce(force: Vector) {
@@ -31,6 +35,11 @@ class Particle {
         this.position.add(this.velocity)
         this.acceleration.set(0, 0)
 
+        // prevent particle from wiggling when velocity is very low
+        if (this.velocity.mag() < 0.01) {
+            this.velocity.set(0, 0)
+        }
+        
         this.p.fill(255)
         this.p.stroke('red')
         this.p.circle(this.position.x, this.position.y, this.radius * 2)
@@ -46,6 +55,21 @@ class Particle {
 
         // draw velocity for debugging with line and arrow
         arrow(this.p, this.position, this.velocity.copy().mult(10), this.p.color('orange'))
+
+        // draw velocity for debugging with text
+        this.p.noStroke()
+        this.p.fill('orange')
+        this.p.textSize(16)
+        this.p.text(
+            `v: (${this.velocity.x.toFixed(2)}, ${this.velocity.y.toFixed(2)})`,
+            this.position.x + this.radius + 10,
+            this.position.y
+        )
+        this.p.text(
+            `mag: ${this.velocity.mag().toFixed(2)}`,
+            this.position.x + this.radius + 10,
+            this.position.y + 20
+        )
     }
 }
 
