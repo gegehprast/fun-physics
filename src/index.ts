@@ -64,8 +64,16 @@ const sketch = (p: p5) => {
         gravity = new Gravity(particles)
         wind = new Wind(p, particles)
         drags = [
-            new Drag(p, p.createVector(0, 200), p.width, 200, particles),
-            new Drag(p, p.createVector(0, 700), p.width, 200, particles),
+            // air
+            new Drag(p, 0.2, p.createVector(0, 0), WIDTH, HEIGHT, particles, p.color(0)),
+            new Drag(p, 1, p.createVector(50, 100), 100, 100, particles, p.color(0, 0, 255, 100)),
+            new Drag(p, 1, p.createVector(260, 250), 100, 100, particles, p.color(0, 0, 255, 100)),
+            new Drag(p, 1, p.createVector(400, 450), 100, 100, particles, p.color(0, 0, 255, 100)),
+            new Drag(p, 1, p.createVector(80, 400), 100, 100, particles, p.color(0, 0, 255, 100)),
+            new Drag(p, 1, p.createVector(270, 600), 100, 100, particles, p.color(0, 0, 255, 100)),
+            new Drag(p, 1, p.createVector(300, 800), 100, 100, particles, p.color(0, 0, 255, 100)),
+            // water
+            new Drag(p, 1, p.createVector(0, 1000), WIDTH, 300, particles, p.color(0, 0, 255, 100)),
         ]
 
         // pause / play with space bar

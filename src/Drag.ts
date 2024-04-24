@@ -14,12 +14,24 @@ class Drag {
 
     public particles: Particle[]
 
-    constructor(p: p5, pos: p5.Vector, width: number, height: number, particles: Particle[]) {
+    public color: p5.Color
+
+    constructor(
+        p: p5,
+        coefficient: number, 
+        pos: p5.Vector,
+        width: number,
+        height: number,
+        particles: Particle[],
+        color: p5.Color
+    ) {
         this.p = p
+        this.coefficient = coefficient
         this.position = pos
         this.width = width
         this.height = height
         this.particles = particles
+        this.color = color
     }
 
     apply() {
@@ -44,7 +56,7 @@ class Drag {
     }
 
     draw() {
-        this.p.fill(60)
+        this.p.fill(this.color)
         this.p.rect(this.position.x, this.position.y, this.width, this.height)
     }
 }
