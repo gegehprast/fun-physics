@@ -10,9 +10,8 @@ class Gravity {
     }
 
     public apply() {
-        const gravity = new Vector(0, GRAVITY)
-
         for (const particle of this.particles) {
+            const gravity = new Vector(0, GRAVITY)
             const weight = gravity.mult(particle.mass)
             particle.applyForce(weight)
         }
