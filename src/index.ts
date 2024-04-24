@@ -13,6 +13,10 @@ import NBody from './n-body/NBody'
 import Pentagon from './n-body/Pentagon'
 import FourBody from './n-body/FourBody'
 import Experimentation from './n-body/Experimentation'
+import FiveComets from './n-body/FiveComets'
+import PulsingHeart from './n-body/PulsingHeart'
+import SixAlternating from './n-body/SixAlternating'
+import SixStar from './n-body/SixStar'
 
 let debug = false
 let particles: Particle[] = []
@@ -95,7 +99,16 @@ const sketch = (p: p5) => {
             // new Drag(p, 2, p.createVector(0, 1000), WIDTH, 300, particles, p.color(0, 0, 255, 100)),
         ]
         
-        nBodyModes = [new Experimentation(p), new Pentagon(p), new FourBody(p), new Hexagonal6Body(p)]
+        nBodyModes = [
+            new Experimentation(p),
+            new FiveComets(p),
+            new FourBody(p),
+            new Hexagonal6Body(p),
+            new Pentagon(p),
+            new PulsingHeart(p),
+            new SixAlternating(p),
+            new SixStar(p),
+        ]
 
         particles = nBodyModes[currentNBodyMode].particles
 
