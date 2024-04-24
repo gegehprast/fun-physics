@@ -37,10 +37,10 @@ class Drag {
     apply() {
         for (const particle of this.particles) {
             if (
-                particle.position.x > this.position.x &&
-                particle.position.x < this.position.x + this.width &&
-                particle.position.y > this.position.y &&
-                particle.position.y < this.position.y + this.height
+                particle.position.x + particle.radius > this.position.x &&
+                particle.position.x - particle.radius < this.position.x + this.width &&
+                particle.position.y + particle.radius > this.position.y &&
+                particle.position.y - particle.radius < this.position.y + this.height
             ) {
                 const surfaceArea = particle.surfaceArea()
                 const speed = particle.velocity.magSq()
