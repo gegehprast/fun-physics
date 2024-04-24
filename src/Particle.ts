@@ -1,6 +1,6 @@
 import p5, { Vector } from 'p5'
 import { arrow } from './helper'
-import { GRAVITY } from './config'
+import { C, GRAVITY, SPEED_SCALE } from './config'
 
 class Particle {
     private p: p5
@@ -19,23 +19,36 @@ class Particle {
 
     public attraction: boolean = true
 
-    private trail: p5.Graphics
+    private canvas: p5.Graphics
 
     private trails: p5.Vector[] = []
 
-    private hue = 0
+    private primaryHue = 0
+
+    private trailHue = 0
 
     public color: p5.Color
 
-    constructor(p: p5, pos: Vector, mass: number, radius: number, color: p5.Color, initialVelocity?: Vector) {
+    private lastAcceleration: Vector = new Vector(0, 0)
+
+    constructor(
+        p: p5,
+        pos: Vector,
+        mass: number,
+        radius: number,
+        color: p5.Color,
+        initialVelocity?: Vector
+    ) {
         this.p = p
         this.position = pos
         this.mass = mass
         this.radius = radius
         this.color = color
+        this.primaryHue = p.random(255)
+        this.trailHue = this.primaryHue
 
-        this.trail = p.createGraphics(p.width, p.height)
-        this.trail.colorMode(p.HSB, 255)
+        this.canvas = p.createGraphics(p.width, p.height)
+        this.canvas.colorMode(p.HSB, 255)
 
         if (initialVelocity) {
             this.velocity = initialVelocity
@@ -55,7 +68,7 @@ class Particle {
         if (!this.attraction) return
 
         const force = Vector.sub(this.position, target.position)
-        const distance = this.p.constrain(force.magSq(), 0.1, 100)
+        const distance = this.p.constrain(force.magSq(), 0, 250)
         const G = GRAVITY
         const strength = (G * (this.mass * target.mass)) / distance
         force.setMag(strength)
@@ -64,7 +77,13 @@ class Particle {
 
     public update() {
         this.velocity.add(this.acceleration)
+
+        if (this.velocity.mag() >= C) {
+            this.velocity.setMag(C)
+        }
+
         this.position.add(this.velocity)
+        this.lastAcceleration = this.acceleration.copy()
         this.acceleration.set(0, 0)
     }
 
@@ -73,34 +92,54 @@ class Particle {
         this.trails.push(this.p.createVector(this.position.x, this.position.y))
 
         // if the trails array is too long, remove the oldest trail
-        if (this.trails.length > 50) {
+        if (this.trails.length > 25) {
             this.trails.shift()
         }
 
         // render the trail
-        this.p.image(this.trail, 0, 0)
-        this.trail.clear()
-        this.trail.strokeWeight(1)
+        this.p.image(this.canvas, 0, 0)
+        this.canvas.clear()
+        this.canvas.strokeWeight(1)
 
         // increment the hue for the next trail
-        this.hue = (this.hue + 1) % 255
+        this.trailHue = (this.trailHue + 1) % 255
 
         // draw the trails with decreasing opacity
         let opacity = 0
 
         for (let i = 0; i < this.trails.length - 1; i++) {
             opacity += 255 / this.trails.length
-            this.trail.fill(this.hue, 255, 255, opacity)
-            this.trail.noStroke()
-            this.trail.circle(this.trails[i].x, this.trails[i].y, this.radius * 2)
+            this.canvas.stroke(this.trailHue, 255, 255, opacity)
+            this.canvas.line(
+                this.trails[i].x,
+                this.trails[i].y,
+                this.trails[i + 1].x,
+                this.trails[i + 1].y
+            )
         }
     }
 
     public draw() {
+        // increment the hue for the next trail
+        this.primaryHue = (this.primaryHue + 1) % 255
+
         // draw the main particle
-        this.p.fill(this.color)
-        this.p.noStroke()
-        this.p.circle(this.position.x, this.position.y, this.radius * 2)
+        this.canvas.fill(this.primaryHue, 255, 255)
+        this.canvas.noStroke()
+        // this.canvas.circle(this.position.x, this.position.y, this.radius * 2)
+        // draw star
+        this.canvas.push()
+        this.canvas.translate(this.position.x, this.position.y)
+        this.canvas.rotate(this.p.frameCount * 0.15)
+        this.canvas.beginShape()
+        for (let i = 0; i < 5; i++) {
+            const angle = this.p.TWO_PI * i * 0.4
+            const x = this.p.cos(angle) * this.radius
+            const y = this.p.sin(angle) * this.radius
+            this.canvas.vertex(x, y)
+        }
+        this.canvas.endShape(this.p.CLOSE)
+        this.canvas.pop()
 
         if (!this.debug) return
 
@@ -118,7 +157,7 @@ class Particle {
         // draw velocity for debugging with text
         this.p.noStroke()
         this.p.fill('pink')
-        this.p.textSize(16)
+        this.p.textSize(11)
         this.p.text(
             `v: (${this.velocity.x.toFixed(2)}, ${this.velocity.y.toFixed(2)})`,
             this.position.x + this.radius + 10,
@@ -130,7 +169,7 @@ class Particle {
             this.position.y + 20
         )
         this.p.text(
-            `acc: (${this.acceleration.x.toFixed(2)}, ${this.acceleration.y.toFixed(2)})`,
+            `acc: (${this.lastAcceleration.x.toFixed(2)}, ${this.lastAcceleration.y.toFixed(2)})`,
             this.position.x + this.radius + 10,
             this.position.y + 40
         )
@@ -142,6 +181,18 @@ class Particle {
 
     public setAttraction(attraction: boolean) {
         this.attraction = attraction
+    }
+
+    public setColor(color: p5.Color) {
+        this.color = color
+    }
+
+    public setMass(mass: number) {
+        this.mass = mass
+    }
+
+    public setRadius(radius: number) {
+        this.radius = radius
     }
 }
 

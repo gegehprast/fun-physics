@@ -8,7 +8,13 @@ import Wind from './Wind'
 import Drag from './Drag'
 import Grid from './Grid'
 import MousePosition from './MousePosition'
+import Hexagonal6Body from './n-body/Hexagonal6Body'
+import NBody from './n-body/NBody'
+import Pentagon from './n-body/Pentagon'
+import FourBody from './n-body/FourBody'
+import Experimentation from './n-body/Experimentation'
 
+let debug = false
 let particles: Particle[] = []
 
 let grid: Grid
@@ -23,121 +29,31 @@ let gravity: Gravity
 let wind: Wind
 let drags: Drag[] = []
 
+let placeholderParticle: Particle
+
 const BOUNDARY = 0
 
-const planets = [
-    {
-        name: 'sun',
-        massRatioToEarth: 3330,
-        sizeRatioToEarth: 109 * 0.025,
-        distanceFromSun: 0,
-        color: 'yellow',
-        initialVelocity: new p5.Vector(0, 0),
-    },
-    {
-        name: 'sun',
-        massRatioToEarth: 3330,
-        sizeRatioToEarth: 109 * 0.025,
-        distanceFromSun: 0.15,
-        color: 'yellow',
-        initialVelocity: new p5.Vector(0, 0.25),
-    },
-    {
-        name: 'sun',
-        massRatioToEarth: 3330,
-        sizeRatioToEarth: 109 * 0.025,
-        distanceFromSun: 0.2,
-        color: 'yellow',
-        initialVelocity: new p5.Vector(0, 0.5),
-    },
-    {
-        name: 'mercury',
-        massRatioToEarth: 0.0553,
-        sizeRatioToEarth: 0.383,
-        distanceFromSun: 0.39,
-        color: 'grey',
-        initialVelocity: new p5.Vector(0, 1.5),
-    },
-    {
-        name: 'venus',
-        massRatioToEarth: 0.815,
-        sizeRatioToEarth: 0.949,
-        distanceFromSun: 0.72,
-        color: 'orange',
-        initialVelocity: new p5.Vector(0, 2.5),
-    },
-    {
-        name: 'earth',
-        massRatioToEarth: 1,
-        sizeRatioToEarth: 1,
-        distanceFromSun: 1,
-        color: 'blue',
-        initialVelocity: new p5.Vector(0, 3.5),
-    },
-    {
-        name: 'moon',
-        massRatioToEarth: 0.0123,
-        sizeRatioToEarth: 0.273,
-        distanceFromSun: 1.05,
-        color: 'grey',
-        initialVelocity: new p5.Vector(0, 3.5),
-    },
-    {
-        name: 'mars',
-        massRatioToEarth: 0.107,
-        sizeRatioToEarth: 0.532,
-        distanceFromSun: 1.52,
-        color: 'red',
-        initialVelocity: new p5.Vector(0, 4.5),
-    },
-    {
-        name: 'jupiter',
-        massRatioToEarth: 317.8 * 0.25,
-        sizeRatioToEarth: 11.21 * 0.25,
-        distanceFromSun: 5.2,
-        color: 'brown',
-        initialVelocity: new p5.Vector(0, 2),
-    },
-    {
-        name: 'saturn',
-        massRatioToEarth: 95.2 * 0.25,
-        sizeRatioToEarth: 9.45 * 0.25,
-        distanceFromSun: 9.54,
-        color: 'lightbrown',
-        initialVelocity: new p5.Vector(0, 2),
-    },
-    {
-        name: 'uranus',
-        massRatioToEarth: 14.5,
-        sizeRatioToEarth: 3.981,
-        distanceFromSun: 19.2,
-        color: 'cyan',
-        initialVelocity: new p5.Vector(0, 2),
-    },
-    {
-        name: 'neptune',
-        massRatioToEarth: 17.1,
-        sizeRatioToEarth: 3.865,
-        distanceFromSun: 30.1,
-        color: 'lightblue',
-        initialVelocity: new p5.Vector(0, 1.5),
-    },
-    {
-        name: 'pluto',
-        massRatioToEarth: 0.0022,
-        sizeRatioToEarth: 0.186,
-        distanceFromSun: 39.4,
-        color: 'lightgrey',
-        initialVelocity: new p5.Vector(0, 1.2),
-    },
-]
+let nBodyModes: NBody[] = []
+let currentNBodyMode: number = 0
+
+let hue = 0
 
 const sketch = (p: p5) => {
     p.setup = () => {
         p.createCanvas(WIDTH, HEIGHT)
+        p.colorMode(p.HSB, 255)
 
         grid = new Grid(p)
         mousePosition = new MousePosition(p)
+
+        placeholderParticle = new Particle(
+            p,
+            p.createVector(p.mouseX, p.mouseY),
+            2,
+            10,
+            p.color(255),
+            p.createVector(0, 0)
+        )
 
         topEdge = new Edge(
             p,
@@ -164,26 +80,13 @@ const sketch = (p: p5) => {
             'leftEdge'
         )
 
-        for (const planet of planets) {
-            const mass = planet.massRatioToEarth * 0.001
-            const radius = planet.sizeRatioToEarth * 10
-            const distance = planet.distanceFromSun * 500
-            const color = p.color(planet.color)
-            const x = CENTERX + distance
-            const y = CENTERY
-            const pos = p.createVector(x, y)
-            const particle = new Particle(p, pos, mass, radius, color, planet.initialVelocity)
-
-            particles.push(particle)
-        }
-
-        gravity = new Gravity(particles)
-        wind = new Wind(p, particles)
+        gravity = new Gravity()
+        wind = new Wind(p)
         drags = [
             // vacuum
             new Drag(p, 0, p.createVector(0, 0), WIDTH, HEIGHT, particles, p.color(0, 0, 0, 0)),
             // air
-            // new Drag(p, 0.2, p.createVector(0, 0), WIDTH, 1000, particles, p.color(150, 50)),
+            // new Drag(p, 0.01, p.createVector(0, 0), WIDTH, HEIGHT, particles, p.color(150, 50)),
             // water
             // new Drag(p, 2, p.createVector(260, 250), 100, 100, particles, p.color(0, 0, 255, 100)),
             // new Drag(p, 2, p.createVector(400, 350), 100, 300, particles, p.color(0, 0, 255, 100)),
@@ -191,6 +94,10 @@ const sketch = (p: p5) => {
             // new Drag(p, 2, p.createVector(300, 800), 100, 100, particles, p.color(0, 0, 255, 100)),
             // new Drag(p, 2, p.createVector(0, 1000), WIDTH, 300, particles, p.color(0, 0, 255, 100)),
         ]
+        
+        nBodyModes = [new Experimentation(p), new Pentagon(p), new FourBody(p), new Hexagonal6Body(p)]
+
+        particles = nBodyModes[currentNBodyMode].particles
 
         p.keyPressed = () => {
             // pause / play with space bar
@@ -204,14 +111,16 @@ const sketch = (p: p5) => {
 
             // toggle debug with 'd'
             if (p.key === 'd') {
+                debug = !debug
+
                 for (const particle of particles) {
-                    particle.setDebug(!particle.debug)
+                    particle.setDebug(debug)
                 }
 
-                topEdge.setDebug(!topEdge.debug)
-                rightEdge.setDebug(!rightEdge.debug)
-                bottomEdge.setDebug(!bottomEdge.debug)
-                leftEdge.setDebug(!leftEdge.debug)
+                topEdge.setDebug(debug)
+                rightEdge.setDebug(debug)
+                bottomEdge.setDebug(debug)
+                leftEdge.setDebug(debug)
             }
 
             // toggle attraction with 'a'
@@ -230,6 +139,30 @@ const sketch = (p: p5) => {
             if (p.key === 'r') {
                 grid.toggle()
             }
+
+            // change n-body mode with 'n'
+            if (p.key === 'n') {
+                currentNBodyMode = (currentNBodyMode + 1) % nBodyModes.length
+                particles = nBodyModes[currentNBodyMode].particles
+            }
+        }
+
+        p.mousePressed = () => {
+            // add a particle at the mouse position
+            const pos = p.createVector(p.mouseX, p.mouseY)
+            const mass = placeholderParticle.mass
+            const radius = placeholderParticle.radius
+            const color = p.color(p.random(255), p.random(255), p.random(255))
+            const initialVelocity = p.createVector(p.random(-5, 5), p.random(-5, 5))
+
+            // particles.push(new Particle(p, pos, mass, radius, color))
+        }
+
+        p.mouseWheel = (event: WheelEvent) => {
+            // change the mass of the placeholder particle
+            const mass = p.constrain(placeholderParticle.mass + event.deltaY / 100, 1, 300)
+            placeholderParticle.setMass(mass)
+            placeholderParticle.setRadius(p.map(placeholderParticle.mass, 1, 10, 5, 15))
         }
     }
 
@@ -238,7 +171,7 @@ const sketch = (p: p5) => {
 
         grid.draw()
 
-        gravity.apply()
+        gravity.apply(particles)
 
         for (const particle of particles) {
             for (const other of particles) {
@@ -248,18 +181,18 @@ const sketch = (p: p5) => {
             }
         }
 
-        if (p.keyIsDown(p.UP_ARROW)) wind.blowUp()
-        if (p.keyIsDown(p.RIGHT_ARROW)) wind.blowRight()
-        if (p.keyIsDown(p.DOWN_ARROW)) wind.blowDown()
-        if (p.keyIsDown(p.LEFT_ARROW)) wind.blowLeft()
+        if (p.keyIsDown(p.UP_ARROW)) wind.blowUp(particles)
+        if (p.keyIsDown(p.RIGHT_ARROW)) wind.blowRight(particles)
+        if (p.keyIsDown(p.DOWN_ARROW)) wind.blowDown(particles)
+        if (p.keyIsDown(p.LEFT_ARROW)) wind.blowLeft(particles)
 
         drags.forEach((drag) => drag.apply())
         drags.forEach((drag) => drag.draw())
 
-        topEdge.detect(particles)
-        rightEdge.detect(particles)
-        bottomEdge.detect(particles)
-        leftEdge.detect(particles)
+        // topEdge.detect(particles)
+        // rightEdge.detect(particles)
+        // bottomEdge.detect(particles)
+        // leftEdge.detect(particles)
 
         topEdge.draw()
         rightEdge.draw()
@@ -270,15 +203,29 @@ const sketch = (p: p5) => {
         for (const particle of particles) {
             particle.update()
             particle.drawTrails()
-        }
-
-        // draw particles
-        for (const particle of particles) {
             particle.draw()
         }
 
+        placeholderParticle.position = p.createVector(p.mouseX, p.mouseY)
+        placeholderParticle.draw()
+
         mousePosition.draw()
 
+        // draw circle from the center of the canvas
+        hue = (hue + 1) % 255
+        p.noFill()
+        p.stroke(hue, 255, 255)
+        p.circle(CENTERX, CENTERY, 600)
+
+        // // draw figure 8
+        // for (let i = 0; i < 6; i++) {
+        //     const x = CENTERX + 300 * p.cos((p.TWO_PI / 6) * i)
+        //     const y = CENTERY + 300 * p.sin((p.TWO_PI / 6) * i)
+
+        //     p.fill(255)
+        //     p.circle(x, y, 10)
+        // }
+        
         showFrameRate(p)
     }
 }
