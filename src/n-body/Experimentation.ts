@@ -1,6 +1,6 @@
 import p5 from 'p5'
 import Particle from '../Particle'
-import { CENTERX, CENTERY, SPEED_SCALE } from '../config'
+import { CENTERX, CENTERY } from '../config'
 import NBody from './NBody'
 
 class Experimentation extends NBody {
@@ -30,7 +30,6 @@ class Experimentation extends NBody {
                     this.p.createVector(x, y),
                     massA,
                     15,
-                    this.p.color(this.p.random(255), this.p.random(150), this.p.random(150)),
                     tangent
                 )
             )
@@ -53,7 +52,6 @@ class Experimentation extends NBody {
                     this.p.createVector(x, y),
                     massB,
                     10,
-                    this.p.color(this.p.random(255), this.p.random(150), this.p.random(150)),
                     tangent
                 )
             )

@@ -1,6 +1,6 @@
 import p5, { Vector } from 'p5'
 import { arrow } from './helper'
-import { C, GRAVITY, SPEED_SCALE } from './config'
+import { C, GRAVITY, HSB_MAX } from './config'
 
 class Particle {
     private p: p5
@@ -15,40 +15,38 @@ class Particle {
 
     public radius: number
 
-    public debug: boolean = false
+    public canvas: p5.Graphics
 
-    public attraction: boolean = true
+    public trails: p5.Vector[] = []
 
-    private canvas: p5.Graphics
-
-    private trails: p5.Vector[] = []
-
-    private primaryHue = 0
-
-    private trailHue = 0
-
-    public color: p5.Color
+    public color: p5.Vector
 
     private lastAcceleration: Vector = new Vector(0, 0)
 
-    constructor(
-        p: p5,
-        pos: Vector,
-        mass: number,
-        radius: number,
-        color: p5.Color,
-        initialVelocity?: Vector
-    ) {
+    private trailsLength: number = 25
+
+    private debug: boolean = false
+
+    private attraction: boolean = true
+
+    private beforeDraw?: (partile: Particle) => void
+
+    private particleShape?: (partile: Particle) => void
+
+    private trailShape?: (partile: Particle) => void
+
+    private beforeFirstUpdate?: (partile: Particle) => void
+
+    private firstUpdate: boolean = true
+
+    constructor(p: p5, pos: Vector, mass: number, radius: number, initialVelocity?: Vector) {
         this.p = p
         this.position = pos
         this.mass = mass
         this.radius = radius
-        this.color = color
-        this.primaryHue = p.random(255)
-        this.trailHue = this.primaryHue
-
         this.canvas = p.createGraphics(p.width, p.height)
-        this.canvas.colorMode(p.HSB, 255)
+        this.canvas.colorMode(p.HSB, HSB_MAX)
+        this.color = p.createVector(0, HSB_MAX, HSB_MAX)
 
         if (initialVelocity) {
             this.velocity = initialVelocity
@@ -76,6 +74,11 @@ class Particle {
     }
 
     public update() {
+        if (this.firstUpdate) {
+            this.beforeFirstUpdate && this.beforeFirstUpdate(this)
+            this.firstUpdate = false
+        }
+
         this.velocity.add(this.acceleration)
 
         if (this.velocity.mag() >= C) {
@@ -85,31 +88,41 @@ class Particle {
         this.position.add(this.velocity)
         this.lastAcceleration = this.acceleration.copy()
         this.acceleration.set(0, 0)
-    }
 
-    public drawTrails() {
         // add the current position to the trails
         this.trails.push(this.p.createVector(this.position.x, this.position.y))
 
         // if the trails array is too long, remove the oldest trail
-        if (this.trails.length > 25) {
+        if (this.trails.length > this.trailsLength) {
             this.trails.shift()
         }
+    }
 
-        // render the trail
+    public draw() {
+        this.beforeDraw && this.beforeDraw(this)
+
         this.p.image(this.canvas, 0, 0)
         this.canvas.clear()
         this.canvas.strokeWeight(1)
 
-        // increment the hue for the next trail
-        this.trailHue = (this.trailHue + 1) % 255
+        this.drawTrails()
 
-        // draw the trails with decreasing opacity
+        this.drawParticle()
+
+        if (this.debug) this.drawDebug()
+    }
+
+    private drawTrails() {
+        if (this.trailShape) {
+            this.trailShape(this)
+            return
+        }
+
         let opacity = 0
 
         for (let i = 0; i < this.trails.length - 1; i++) {
-            opacity += 255 / this.trails.length
-            this.canvas.stroke(this.trailHue, 255, 255, opacity)
+            opacity += HSB_MAX / this.trails.length
+            this.canvas.stroke(this.color.x, this.color.y, this.color.z, opacity)
             this.canvas.line(
                 this.trails[i].x,
                 this.trails[i].y,
@@ -119,30 +132,18 @@ class Particle {
         }
     }
 
-    public draw() {
-        // increment the hue for the next trail
-        this.primaryHue = (this.primaryHue + 1) % 255
-
-        // draw the main particle
-        this.canvas.fill(this.primaryHue, 255, 255)
-        this.canvas.noStroke()
-        // this.canvas.circle(this.position.x, this.position.y, this.radius * 2)
-        // draw star
-        this.canvas.push()
-        this.canvas.translate(this.position.x, this.position.y)
-        this.canvas.rotate(this.p.frameCount * 0.15)
-        this.canvas.beginShape()
-        for (let i = 0; i < 5; i++) {
-            const angle = this.p.TWO_PI * i * 0.4
-            const x = this.p.cos(angle) * this.radius
-            const y = this.p.sin(angle) * this.radius
-            this.canvas.vertex(x, y)
+    private drawParticle() {
+        if (this.particleShape) {
+            this.particleShape(this)
+            return
         }
-        this.canvas.endShape(this.p.CLOSE)
-        this.canvas.pop()
 
-        if (!this.debug) return
+        this.canvas.fill(this.color.x, this.color.y, this.color.z)
+        this.canvas.noStroke()
+        this.canvas.circle(this.position.x, this.position.y, this.radius * 2)
+    }
 
+    private drawDebug() {
         // draw radius for debugging
         this.p.line(
             this.position.x,
@@ -183,16 +184,32 @@ class Particle {
         this.attraction = attraction
     }
 
-    public setColor(color: p5.Color) {
-        this.color = color
-    }
-
     public setMass(mass: number) {
         this.mass = mass
     }
 
     public setRadius(radius: number) {
         this.radius = radius
+    }
+
+    public setTrailLength(length: number) {
+        this.trailsLength = length
+    }
+
+    public setParticleShape(shape: (partile: Particle) => void) {
+        this.particleShape = shape
+    }
+
+    public setTrailShape(shape: (partile: Particle) => void) {
+        this.trailShape = shape
+    }
+
+    public setBeforeDraw(callback: (partile: Particle) => void) {
+        this.beforeDraw = callback
+    }
+
+    public setBeforeFirstUpdate(callback: (partile: Particle) => void) {
+        this.beforeFirstUpdate = callback
     }
 }
 

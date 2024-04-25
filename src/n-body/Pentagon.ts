@@ -1,6 +1,6 @@
 import p5 from 'p5'
 import Particle from '../Particle'
-import { CENTERX, CENTERY } from '../config'
+import { CENTERX, CENTERY, HSB_MAX } from '../config'
 import NBody from './NBody'
 
 class Pentagon extends NBody {
@@ -12,18 +12,19 @@ class Pentagon extends NBody {
             const x = CENTERX - 300 * this.p.sin((this.p.TWO_PI / 5) * i)
             const y = CENTERY - 300 * this.p.cos((this.p.TWO_PI / 5) * i)
             const tangent = this.p.createVector(x, y).sub(CENTERX, CENTERY).rotate(this.p.HALF_PI).setMag(1.5)
-            
-            
-            this.particles.push(
-                new Particle(
-                    this.p,
-                    this.p.createVector(x, y),
-                    100,
-                    10,
-                    this.p.color(this.p.random(255), this.p.random(255), this.p.random(255)),
-                    tangent
-                )
+            const particle = new Particle(
+                this.p,
+                this.p.createVector(x, y),
+                100,
+                10,
+                tangent
             )
+            particle.setTrailLength(1000)
+            particle.setBeforeDraw(this.beforeDraw)
+            particle.setParticleShape(this.getParticleShape)
+            particle.color = this.p.createVector(this.p.random(HSB_MAX), HSB_MAX, HSB_MAX)
+
+            this.particles.push(particle)
         }
     }
 }

@@ -1,6 +1,6 @@
 import p5 from 'p5'
 import Particle from '../Particle'
-import { CENTERX, CENTERY, SPEED_SCALE } from '../config'
+import { CENTERX, CENTERY, HSB_MAX } from '../config'
 import NBody from './NBody'
 
 class PulsingHeart extends NBody {
@@ -23,17 +23,13 @@ class PulsingHeart extends NBody {
                 .sub(CENTERX, CENTERY)
                 .rotate(this.p.HALF_PI)
                 .setMag(tangentMagA)
+            const particle = new Particle(this.p, this.p.createVector(x, y), massA, 15, tangent)
+            particle.setBeforeDraw(this.beforeDraw)
+            particle.setParticleShape(this.getParticleShape)
+            // particle.setTrailShape(this.getTrailShape)
+            particle.color = this.p.createVector(this.p.random(HSB_MAX), HSB_MAX, HSB_MAX)
 
-            this.particles.push(
-                new Particle(
-                    this.p,
-                    this.p.createVector(x, y),
-                    massA,
-                    15,
-                    this.p.color(this.p.random(255), this.p.random(150), this.p.random(150)),
-                    tangent
-                )
-            )
+            this.particles.push(particle)
         }
 
         for (let i = 0; i < countB; i++) {
@@ -46,17 +42,13 @@ class PulsingHeart extends NBody {
                 .rotate(this.p.HALF_PI)
                 .mult(-1)
                 .setMag(tangentMagB)
+            const particle = new Particle(this.p, this.p.createVector(x, y), massB, 10, tangent)
+            particle.setBeforeDraw(this.beforeDraw)
+            particle.setParticleShape(this.getParticleShape)
+            // particle.setTrailShape(this.getTrailShape)
+            particle.color = this.p.createVector(this.p.random(HSB_MAX), HSB_MAX, HSB_MAX)
 
-            this.particles.push(
-                new Particle(
-                    this.p,
-                    this.p.createVector(x, y),
-                    massB,
-                    10,
-                    this.p.color(this.p.random(255), this.p.random(150), this.p.random(150)),
-                    tangent
-                )
-            )
+            this.particles.push(particle)
         }
     }
 }

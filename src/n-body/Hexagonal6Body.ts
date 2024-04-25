@@ -1,6 +1,6 @@
 import p5 from 'p5'
 import Particle from '../Particle'
-import { CENTERX, CENTERY } from '../config'
+import { CENTERX, CENTERY, HSB_MAX } from '../config'
 import NBody from './NBody'
 
 class Hexagonal6Body extends NBody {
@@ -16,17 +16,19 @@ class Hexagonal6Body extends NBody {
                 .sub(CENTERX, CENTERY)
                 .rotate(this.p.HALF_PI)
                 .setMag(5)
-
-            this.particles.push(
-                new Particle(
-                    p,
-                    p.createVector(x, y),
-                    200,
-                    10,
-                    p.color(p.random(255), p.random(255), p.random(255)),
-                    tangent
-                )
+            const particle = new Particle(
+                this.p,
+                this.p.createVector(x, y),
+                200,
+                10,
+                tangent
             )
+            particle.setTrailLength(1000)
+            particle.setBeforeDraw(this.beforeDraw)
+            particle.setParticleShape(this.getParticleShape)
+            particle.color = this.p.createVector(this.p.random(HSB_MAX), HSB_MAX, HSB_MAX)
+
+            this.particles.push(particle)
         }
     }
 }

@@ -1,6 +1,6 @@
 import p5 from 'p5'
 import Particle from '../Particle'
-import { CENTERX, CENTERY } from '../config'
+import { CENTERX, CENTERY, HSB_MAX } from '../config'
 import NBody from './NBody'
 
 class FourBody extends NBody {
@@ -16,17 +16,19 @@ class FourBody extends NBody {
                 .sub(CENTERX, CENTERY)
                 .rotate(this.p.HALF_PI)
                 .setMag(4)
-
-            this.particles.push(
-                new Particle(
-                    this.p,
-                    this.p.createVector(x, y),
-                    100,
-                    10,
-                    this.p.color(this.p.random(255), this.p.random(150), this.p.random(150)),
-                    tangent
-                )
+            const particle = new Particle(
+                this.p,
+                this.p.createVector(x, y),
+                100,
+                10,
+                tangent
             )
+            particle.setTrailLength(1000)
+            particle.setBeforeDraw(this.beforeDraw)
+            particle.setParticleShape(this.getParticleShape)
+            particle.color = this.p.createVector(this.p.random(HSB_MAX), HSB_MAX, HSB_MAX)
+
+            this.particles.push(particle)
         }
     }
 }

@@ -1,6 +1,6 @@
 import p5 from 'p5'
 import Particle from '../Particle'
-import { CENTERX, CENTERY, SPEED_SCALE } from '../config'
+import { CENTERX, CENTERY, HSB_MAX } from '../config'
 import NBody from './NBody'
 
 class SixAlternating extends NBody {
@@ -23,17 +23,20 @@ class SixAlternating extends NBody {
                 .sub(CENTERX, CENTERY)
                 .rotate(this.p.HALF_PI)
                 .setMag(tangentMagA)
-
-            this.particles.push(
-                new Particle(
-                    this.p,
-                    this.p.createVector(x, y),
-                    massA,
-                    10,
-                    this.p.color(this.p.random(255), this.p.random(150), this.p.random(150)),
-                    tangent
-                )
+            const particle = new Particle(
+                this.p,
+                this.p.createVector(x, y),
+                massA,
+                12,
+                tangent
             )
+            particle.color = this.p.createVector(this.p.random(HSB_MAX), HSB_MAX, HSB_MAX)
+            particle.setTrailLength(100)
+            particle.setBeforeDraw(this.beforeDraw)
+            particle.setParticleShape(this.getParticleShape)
+            particle.setTrailShape(this.getTrailShape)
+
+            this.particles.push(particle)
         }
 
         for (let i = 0; i < countB; i++) {
@@ -46,17 +49,19 @@ class SixAlternating extends NBody {
                 .rotate(this.p.HALF_PI)
                 .mult(-1)
                 .setMag(tangentMagB)
-
-            this.particles.push(
-                new Particle(
-                    this.p,
-                    this.p.createVector(x, y),
-                    massB,
-                    5,
-                    this.p.color(this.p.random(255), this.p.random(150), this.p.random(150)),
-                    tangent
-                )
+            const particle = new Particle(
+                this.p,
+                this.p.createVector(x, y),
+                massB,
+                8,
+                tangent
             )
+            particle.color = this.p.createVector(this.p.random(HSB_MAX), HSB_MAX, HSB_MAX)
+            particle.setTrailLength(30)
+            particle.setBeforeDraw(this.beforeDraw)
+            particle.setParticleShape(this.getParticleShape)
+
+            this.particles.push(particle)
         }
     }
 }

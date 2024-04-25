@@ -11,9 +11,10 @@ import Experimentation from './n-body/Experimentation'
 import FiveComets from './n-body/FiveComets'
 import PulsingHeart from './n-body/PulsingHeart'
 import SixAlternating from './n-body/SixAlternating'
-import SixStar from './n-body/SixStar'
+import SixRunawayStar from './n-body/SixRunawayStar'
 
 let debug = false
+let particleAttraction = true
 let mousePosition: MousePosition
 
 let particles: Particle[] = []
@@ -25,19 +26,18 @@ let hue = 0
 const sketch = (p: p5) => {
     p.setup = () => {
         p.createCanvas(WIDTH, HEIGHT)
-        p.colorMode(p.HSB, 255)
+        p.colorMode(p.HSB, 100)
 
         mousePosition = new MousePosition(p)
         
         nBodyModes = [
-            new Experimentation(p),
             new FiveComets(p),
             new FourBody(p),
             new Hexagonal6Body(p),
             new Pentagon(p),
             new PulsingHeart(p),
             new SixAlternating(p),
-            new SixStar(p),
+            new SixRunawayStar(p),
         ]
 
         particles = nBodyModes[currentNBodyMode].particles
@@ -63,8 +63,10 @@ const sketch = (p: p5) => {
 
             // toggle attraction with 'a'
             if (p.key === 'a') {
+                particleAttraction = !particleAttraction
+
                 for (const particle of particles) {
-                    particle.setAttraction(!particle.attraction)
+                    particle.setAttraction(particleAttraction)
                 }
             }
 
@@ -91,14 +93,13 @@ const sketch = (p: p5) => {
         // update and draw particle trails
         for (const particle of particles) {
             particle.update()
-            particle.drawTrails()
             particle.draw()
         }
 
         // draw circle from the center of the canvas
-        hue = (hue + 1) % 255
+        hue = (hue + 1) % 100
         p.noFill()
-        p.stroke(hue, 255, 255)
+        p.stroke(hue, 100, 100)
         p.circle(CENTERX, CENTERY, 600)
 
         // others
