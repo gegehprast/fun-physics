@@ -1,6 +1,6 @@
 import p5, { Vector } from 'p5'
 import { arrow } from './helper'
-import { C, GRAVITY, HSB_MAX } from './config'
+import { C, GRAVITATIONAL_CONSTANT, GRAVITY, HSB_MAX } from './config'
 
 class Particle {
     private p: p5
@@ -63,6 +63,18 @@ class Particle {
     }
 
     public attract(target: Particle) {
+        if (!this.attraction) return
+
+        // Newton's law of universal gravitation: F = G * (m1 * m2) / r^2
+        const direction = target.position.copy().sub(this.position)
+        const distance = direction.mag()
+        const force = (GRAVITATIONAL_CONSTANT * this.mass * target.mass) / Math.pow(distance, 2)
+        const forceVector = direction.copy().setMag(force)
+
+        this.applyForce(forceVector)
+    }
+
+    public oldAttract(target: Particle) {
         if (!this.attraction) return
 
         const force = Vector.sub(this.position, target.position)

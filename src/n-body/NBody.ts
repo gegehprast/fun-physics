@@ -34,22 +34,22 @@ abstract class NBody {
             )
 
             // star shape trails
-            particle.canvas.noStroke()
-            particle.canvas.fill(particle.color.x, particle.color.y, particle.color.z, opacity)
-            particle.canvas.push()
-            particle.canvas.translate(particle.trails[i].x, particle.trails[i].y)
-            particle.canvas.rotate(particle.trails[i].heading())
-            particle.canvas.beginShape()
+            // particle.canvas.noStroke()
+            // particle.canvas.fill(particle.color.x, particle.color.y, particle.color.z, opacity)
+            // particle.canvas.push()
+            // particle.canvas.translate(particle.trails[i].x, particle.trails[i].y)
+            // particle.canvas.rotate(particle.trails[i].heading())
+            // particle.canvas.beginShape()
 
-            for (let j = 0; j < 5; j++) {
-                const angle = this.p.TWO_PI * j * 0.4
-                const x = this.p.cos(angle) * particle.radius / 2
-                const y = this.p.sin(angle) * particle.radius / 2
-                particle.canvas.vertex(x, y)
-            }
+            // for (let j = 0; j < 5; j++) {
+            //     const angle = this.p.TWO_PI * j * 0.4
+            //     const x = this.p.cos(angle) * particle.radius / 2
+            //     const y = this.p.sin(angle) * particle.radius / 2
+            //     particle.canvas.vertex(x, y)
+            // }
 
-            particle.canvas.endShape(this.p.CLOSE)
-            particle.canvas.pop()
+            // particle.canvas.endShape(this.p.CLOSE)
+            // particle.canvas.pop()
         }
     }
 

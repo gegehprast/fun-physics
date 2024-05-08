@@ -46,6 +46,7 @@ class FiveComets extends NBody {
             const particle = new Particle(this.p, this.p.createVector(x, y), massB, 5, tangent)
             particle.setBeforeDraw(this.beforeDraw)
             particle.setParticleShape(this.getParticleShape)
+            particle.setTrailLength(1200)
             particle.setTrailShape(this.getTrailShape)
             particle.color = this.p.createVector(this.p.random(HSB_MAX), HSB_MAX, HSB_MAX)
 

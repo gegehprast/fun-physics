@@ -31,7 +31,8 @@ const sketch = (p: p5) => {
         mousePosition = new MousePosition(p)
         
         nBodyModes = [
-            new FiveComets(p),
+            // new Experimentation(p),
+            // new FiveComets(p),
             new FourBody(p),
             new Hexagonal6Body(p),
             new Pentagon(p),
